@@ -34,20 +34,20 @@ Auth::routes(['register' => false]);
 
 // Parcel Services
 Route::prefix('eparcel')->middleware(['auth', 'user-access:parcel'])->group(function() {
-    Route::get('/dashboard', [App\http\Controllers\ParcelServiceController::class, 'dashboard'])->name('parcel.dashboard');
-    Route::get('/kurier', [App\http\Controllers\ParcelServiceController::class, 'courier'])->name('parcel.courier');
-    Route::post('/kurier', [App\http\Controllers\ParcelServiceController::class, 'addCourier'])->name('parcel.courier.register');
-    Route::get('/daftar/penerima', [App\http\Controllers\ParcelServiceController::class, 'formWithRecipient'])->name('parcel.form.with.recipient');
+    Route::get('/dashboard', [App\Http\Controllers\ParcelServiceController::class, 'dashboard'])->name('parcel.dashboard');
+    Route::get('/kurier', [App\Http\Controllers\ParcelServiceController::class, 'courier'])->name('parcel.courier');
+    Route::post('/kurier', [App\Http\Controllers\ParcelServiceController::class, 'addCourier'])->name('parcel.courier.register');
+    Route::get('/daftar/penerima', [App\Http\Controllers\ParcelServiceController::class, 'formWithRecipient'])->name('parcel.form.with.recipient');
     Route::get('/recipient/search', [App\Http\Controllers\ParcelServiceController::class, 'searchRecipient'])->name('parcel.recipient.search');
     Route::post('/recipient/detail', [App\Http\Controllers\ParcelServiceController::class, 'recipientDetails'])->name('parcel.recipient.detail');
-    Route::post('/daftar/penerima', [App\http\Controllers\ParcelServiceController::class, 'registerParcelWithRecipient'])->name('parcel.register.with.recipient');
-    Route::get('/daftar/tanpa_penerima', [App\http\Controllers\ParcelServiceController::class, 'formWithoutRecipient'])->name('parcel.form.without.recipient');
-    Route::post('/daftar/tanpa_penerima', [App\http\Controllers\ParcelServiceController::class, 'registerParcelWithoutRecipient'])->name('parcel.register.without.recipient');
-    Route::get('/tuntut/penerima', [App\http\Controllers\ParcelServiceController::class, 'claimWithRecipient'])->name('parcel.claim.with.recipient');
-    Route::get('/tuntut/parcel/{ic}', [App\http\Controllers\ParcelServiceController::class, 'recipientParcelDetails'])->name('recipient.parcel.details');
+    Route::post('/daftar/penerima', [App\Http\Controllers\ParcelServiceController::class, 'registerParcelWithRecipient'])->name('parcel.register.with.recipient');
+    Route::get('/daftar/tanpa_penerima', [App\Http\Controllers\ParcelServiceController::class, 'formWithoutRecipient'])->name('parcel.form.without.recipient');
+    Route::post('/daftar/tanpa_penerima', [App\Http\Controllers\ParcelServiceController::class, 'registerParcelWithoutRecipient'])->name('parcel.register.without.recipient');
+    Route::get('/tuntut/penerima', [App\Http\Controllers\ParcelServiceController::class, 'claimWithRecipient'])->name('parcel.claim.with.recipient');
+    Route::get('/tuntut/parcel/{ic}', [App\Http\Controllers\ParcelServiceController::class, 'recipientParcelDetails'])->name('recipient.parcel.details');
     Route::match(['get', 'post'], '/tuntut/tanpa_penerima', [App\Http\Controllers\ParcelServiceController::class, 'claimWithoutRecipient'])->name('parcel.claim.without.recipient');
-    Route::post('/tuntut/tanpa_penerima/kemaskini/{id}', [App\http\Controllers\ParcelServiceController::class, 'claimWithoutRecipientUpdate'])->name('parcel.claim.without.recipient.update');
-    Route::post('/tuntut/parcel/kemaskini/{id}', [App\http\Controllers\ParcelServiceController::class, 'claimWithRecipientUpdate'])->name('parcel.claim.with.recipient.update');
+    Route::post('/tuntut/tanpa_penerima/kemaskini/{id}', [App\Http\Controllers\ParcelServiceController::class, 'claimWithoutRecipientUpdate'])->name('parcel.claim.without.recipient.update');
+    Route::post('/tuntut/parcel/kemaskini/{id}', [App\Http\Controllers\ParcelServiceController::class, 'claimWithRecipientUpdate'])->name('parcel.claim.with.recipient.update');
 
     // Logout route
     Route::post('/logout', [LoginController::class, 'logout'])->name('parcel.logout');
