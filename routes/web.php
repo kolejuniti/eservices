@@ -19,9 +19,9 @@ Route::get('/', function () {
     if (Auth::check()) {
         switch (Auth::user()->type) {
             case 'parcel':
-                return redirect('/parcel/dashboard');
+                return redirect('/eparcel/dashboard');
             case 'sticker':
-                return redirect('/sticker/dashboard');
+                return redirect('/esticker/dashboard');
         }
     }
 
@@ -54,7 +54,7 @@ Route::prefix('eparcel')->middleware(['auth', 'user-access:parcel'])->group(func
 });
 
 // Vehicle Services
-Route::prefix('sticker')->middleware(['auth', 'user-access:sticker'])->group(function() {
+Route::prefix('esticker')->middleware(['auth', 'user-access:sticker'])->group(function() {
     Route::get('/dashboard', [App\Http\Controllers\StickerServiceController::class, 'dashboard'])->name('sticker.dashboard');
 
     // Logout route
