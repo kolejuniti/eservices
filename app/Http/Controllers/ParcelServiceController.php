@@ -46,18 +46,20 @@ class ParcelServiceController extends Controller
         $search = trim($request->query('search'));
 
         $users = DB::table('eduhub.users')
-            ->select('ic', 'name')
+            ->select('ic', 'name', 'no_staf AS id')
             ->where(function ($query) use ($search) {
                 $query->where('name', 'LIKE', "%{$search}%")
-                    ->orWhere('ic', 'LIKE', "%{$search}%");
+                    ->orWhere('ic', 'LIKE', "%{$search}%")
+                    ->orWhere('no_staf', 'LIKE', "%{$search}%");
             })
             ->get();
 
         $students = DB::table('eduhub.students')
-            ->select('ic', 'name')
+            ->select('ic', 'name', 'no_matric AS id')
             ->where(function ($query) use ($search) {
                 $query->where('name', 'LIKE', "%{$search}%")
-                    ->orWhere('ic', 'LIKE', "%{$search}%");
+                    ->orWhere('ic', 'LIKE', "%{$search}%")
+                    ->orWhere('no_matric', 'LIKE', "%{$search}%");
             })
             ->get();
 
@@ -214,10 +216,11 @@ class ParcelServiceController extends Controller
                 )
                 ->where(function ($query) use ($search) {
                     $query->where('eduhub.users.ic', 'LIKE', '%' . $search . '%')
-                        ->orWhere('eduhub.users.name', 'LIKE', '%' . $search . '%');
+                        ->orWhere('eduhub.users.name', 'LIKE', '%' . $search . '%')
+                        ->orWhere('eduhub.users.no_staf', 'LIKE', '%' . $search . '%');
                 })
                 ->where('parcels.status', 1) // Only include parcels with status 1
-                ->groupBy('eduhub.users.ic', 'eduhub.users.name')
+                ->groupBy('eduhub.users.ic', 'eduhub.users.name', 'eduhub.users.no_staf')
                 ->get();
 
             $students = DB::table('eduhub.students')
@@ -230,10 +233,11 @@ class ParcelServiceController extends Controller
                 )
                 ->where(function ($query) use ($search) {
                     $query->where('eduhub.students.ic', 'LIKE', '%' . $search . '%')
-                        ->orWhere('eduhub.students.name', 'LIKE', '%' . $search . '%');
+                        ->orWhere('eduhub.students.name', 'LIKE', '%' . $search . '%')
+                        ->orWhere('eduhub.students.no_matric', 'LIKE', '%' . $search . '%');
                 })
                 ->where('parcels.status', 1) // Only include parcels with status 1
-                ->groupBy('eduhub.students.ic', 'eduhub.students.name')
+                ->groupBy('eduhub.students.ic', 'eduhub.students.name', 'eduhub.students.no_matric')
                 ->get();
 
             $recipients = $users->merge($students)->unique('ic')->values(); // reset keys
