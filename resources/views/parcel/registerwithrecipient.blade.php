@@ -41,7 +41,7 @@
                         </div>
                         <div class="row g-2 mb-2 row-cols-1">
                             <div class="col-md-3 col-sm-3 col-3">
-                                <label for="">Nama Penerima</label>
+                                <label for="">Nama</label>
                             </div>
                             <div class="col-md-9 col-md-9 col-9">
                                 <label for="recipient_name" id="recipient_name"></label>
@@ -49,7 +49,7 @@
                         </div>
                         <div class="row g-2 mb-2 row-cols-1">
                             <div class="col-md-3 col-sm-3 col-3">
-                                <label for="">No. KP Penerima</label>
+                                <label for="">No. KP</label>
                             </div>
                             <div class="col-md-3 col-md-3 col-3">
                                 <input type="text" name="ic" id="recipient_ic" value="" class="form-control form-control-sm" readonly>
