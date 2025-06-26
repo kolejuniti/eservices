@@ -51,7 +51,7 @@
                             @foreach ($recipients as $recipient)
                             <tr>
                                 <td></td>
-                                <td><a href="{{ route('recipient.parcel.details', ['ic' => $recipient->ic]) }}" class="btn btn-sm btn-link" target="_blank">{{ $recipient->recipient_name }}</a></td>
+                                <td><a href="{{ route('recipient.parcel.details', ['ic' => Crypt::encryptString($recipient->ic)]) }}" class="btn btn-sm btn-link" target="_blank">{{ $recipient->recipient_name }}</a></td>
                                 <td class="text-center">{{ $recipient->ic }}</td>
                                 <td class="text-center">{{ $recipient->total_parcels }}</td>
                                 <td class="text-center">{{ $recipient->cod_parcels }}</td>
