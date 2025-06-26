@@ -19,12 +19,12 @@
                             {{ session('error') }}
                         </div>
                     @endif<div class="text-center mb-1">
-                        <a href="{{ route('login') }}">
+                        {{-- <a href="{{ route('login') }}">
                             <picture>
                                 <source srcset="https://ku-storage-object.ap-south-1.linodeobjects.com/urproject/images/logo/logo_edaftar.webp" type="image/webp">
                                 <img src="https://ku-storage-object.ap-south-1.linodeobjects.com/urproject/images/logo/logo_edaftar.png" alt="Logo" class="img-fluid" width="120" height="120">
                             </picture>
-                        </a>
+                        </a> --}}
                     </div>                    
                     <h2 class="fs-6 fw-normal text-center text-secondary mb-4">Sign in to your account</h2>
                     <form method="POST" action="{{ route('login') }}">
