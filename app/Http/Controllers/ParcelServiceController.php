@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Crypt;
 
 class ParcelServiceController extends Controller
 {
@@ -246,33 +247,40 @@ class ParcelServiceController extends Controller
         return view('parcel.claimwithrecipient', compact('recipients', 'search'));
     }
 
-    public function recipientParcelDetails(Request $request, $ic)
+    public function recipientParcelDetails(Request $request, $encryptedIc)
     {
-        $users = DB::table('eduhub.users')
-            ->select('name', 'ic') // Select only the 'name' column
-            ->where('ic', '=', $ic)
-            ->first(); // Use first() to get one result
+        try {
+            $ic = Crypt::decryptString($encryptedIc);
 
-        $students = DB::table('eduhub.students')
-            ->select('name', 'ic') // Select only the 'name' column
-            ->where('ic', '=', $ic)
-            ->first(); // Use first() to get one result
+            $users = DB::table('eduhub.users')
+                ->select('name', 'ic') // Select only the 'name' column
+                ->where('ic', '=', $ic)
+                ->first(); // Use first() to get one result
 
-        // Merge the results, giving priority to users
-        $recipient = $users ?: $students;
+            $students = DB::table('eduhub.students')
+                ->select('name', 'ic') // Select only the 'name' column
+                ->where('ic', '=', $ic)
+                ->first(); // Use first() to get one result
 
-        $parcels = DB::table('parcels')
-            ->join('couriers', 'parcels.courier_id', '=', 'couriers.id')
-            ->select('parcels.*', 'couriers.name as courier_name')
-            ->where('parcels.ic', $ic)
-            ->orderByDesc('parcels.created_at')
-            ->get();
+            // Merge the results, giving priority to users
+            $recipient = $users ?: $students;
 
-        $total_cod = DB::table('parcels')
-            ->where('ic', $ic)
-            ->sum('cod_amount');
+            $parcels = DB::table('parcels')
+                ->join('couriers', 'parcels.courier_id', '=', 'couriers.id')
+                ->select('parcels.*', 'couriers.name as courier_name')
+                ->where('parcels.ic', $ic)
+                ->orderByDesc('parcels.created_at')
+                ->get();
 
-        return view('parcel.recipientparceldetails', compact('parcels', 'total_cod', 'recipient'));
+            $total_cod = DB::table('parcels')
+                ->where('ic', $ic)
+                ->sum('cod_amount');
+
+            return view('parcel.recipientparceldetails', compact('parcels', 'total_cod', 'recipient'));
+        
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            abort(403, 'Invalid IC or tampered link.');
+        }
     }
 
     public function claimWithoutRecipient(Request $request)
