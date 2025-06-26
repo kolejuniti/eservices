@@ -42,7 +42,7 @@
                             <a class="nav-link active" aria-current="page" href="{{ route('parcel.dashboard') }}"><i class="fa-solid fa-house"></i>&nbsp;Home</a>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-database"></i>&nbsp;Data X
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-database"></i>&nbsp;Data
                             </a>
                             <ul class="dropdown-menu">
                                 <li>
