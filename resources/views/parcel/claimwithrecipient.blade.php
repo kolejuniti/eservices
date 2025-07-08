@@ -4,7 +4,7 @@
 <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.1.0/b-3.1.0/b-colvis-3.1.0/b-html5-3.1.0/b-print-3.1.0/cr-2.0.3/datatables.min.css" rel="stylesheet">
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-md-10">
             @if(session('alert'))
                 <div class="alert alert-danger">
                     {{ session('alert') }}
@@ -21,7 +21,7 @@
                 <div class="card-body">
                     <div class="col-12 col-md-8 col-sm-8 offset-md-2 offset-sm-2">
                         <div class="input-group mb-3">
-                            <input type="text" name="search" id="search" class="form-control" placeholder="Nama / No. Kad Pengenalan" >
+                            <input type="text" name="search" id="search" class="form-control" placeholder="Nama / No. Kad Pengenalan / No. Matriks" >
                             <button class="btn btn-warning" type="submit" id="button-addon2"><i class="bi bi-search"></i></button>
                         </div>
                     </div>
