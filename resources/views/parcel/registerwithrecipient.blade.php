@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-md-10">
             @if(session('alert'))
                 <div class="alert alert-danger">
                     {{ session('alert') }}
@@ -22,7 +22,7 @@
                     </div>
                     <div class="row g-2 mb-2 row-cols-1">
                         <div class="col-md-3 col-sm-3 col-3">
-                            <label for="">Nama / No. KP</label>
+                            <label for="">Nama / No. KP / No. Matriks</label>
                         </div>
                         <div class="col-md-3 col-md-3 col-3">
                             <input name="search" id="search" type="text" class="form-control form-control-sm">
