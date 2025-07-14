@@ -73,19 +73,21 @@ class ParcelServiceController extends Controller
     {
         $ic = $request->input('ic');
 
-        // Retrieve recipient by IC and select only the 'name' field
         $users = DB::table('eduhub.users')
-            ->select('name', 'ic') // Select only the 'name' column
+            ->select('name', 'ic', 'no_staf AS id', DB::raw("'-' AS phone"))
             ->where('ic', '=', $ic)
-            ->first(); // Use first() to get one result
+            ->first();
 
-        // Retrieve recipient by IC and select only the 'name' field
-        $students = DB::table('eduhub.students')
-            ->select('name', 'ic') // Select only the 'name' column
-            ->where('ic', '=', $ic)
-            ->first(); // Use first() to get one result
+        $students = DB::table('eduhub.students as s')
+            ->leftJoin('eduhub.tblstudent_personal as tp', 's.ic', '=', 'tp.student_ic')
+            ->select(
+                's.name',
+                's.ic',
+                's.no_matric as id', 'tp.no_tel as phone'
+            )
+            ->where('s.ic', '=', $ic)
+            ->first();
 
-        // Merge the results, giving priority to users
         $recipient = $users ?: $students;
 
         return response()->json(['recipient' => $recipient]);
