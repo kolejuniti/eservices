@@ -299,7 +299,13 @@ class ParcelServiceController extends Controller
         $parcels = DB::table('parcels')
             ->join('couriers', 'parcels.courier_id', '=', 'couriers.id')
             ->select('parcels.*', 'couriers.name as courier_name')
-            ->whereNotNull('parcels.recipient_name')
+            ->where(function ($query) {
+                $query->whereNotNull('parcels.recipient_name')
+                    ->orWhere(function ($q) {
+                        $q->whereNull('parcels.recipient_name')
+                            ->whereNull('parcels.ic');
+                    });
+            })
             ->whereBetween(DB::raw("CAST(parcels.created_at AS DATE)"), [$start_date, $end_date])
             ->orderByDesc('parcels.created_at')
             ->get();
