@@ -54,6 +54,20 @@
                             <div class="col-md-3 col-md-3 col-3">
                                 <input type="text" name="ic" id="recipient_ic" value="" class="form-control form-control-sm" readonly>
                             </div>
+                            <div class="col-md-3 col-sm-3 col-3">
+                                <label for="">No. Matriks / Staf</label>
+                            </div>
+                            <div class="col-md-3 col-md-3 col-3">
+                                <input type="text" name="id" id="recipient_id" value="" class="form-control form-control-sm" readonly>
+                            </div>
+                        </div>
+                        <div class="row g-2 mb-2 row-cols-1">
+                            <div class="col-md-3 col-sm-3 col-3">
+                                <label for="">No. Telefon</label>
+                            </div>
+                            <div class="col-md-3 col-md-3 col-3">
+                                <input type="text" name="phone" id="recipient_phone" value="" class="form-control form-control-sm" readonly>
+                            </div>
                         </div>
                         <div class="col-md-12 col-sm-12 mb-2">
                             <label for="" class="fw-bold">Maklumat Parcel</label>
@@ -181,14 +195,21 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    const recipientLabel = document.getElementById('recipient_name');
-                    const recipientICLabel = document.getElementById('recipient_ic');
+                    const recipientNameLabel = document.getElementById('recipient_name');
+                    const recipientICInput = document.getElementById('recipient_ic');
+                    const recipientIDInput = document.getElementById('recipient_id');
+                    const recipientPhoneInput = document.getElementById('recipient_phone');
+
                     if (data.recipient) {
-                        recipientLabel.textContent = data.recipient.name; // Display the recipient's name
-                        recipientICLabel.value = data.recipient.ic; // Display the recipient's IC
+                        recipientNameLabel.textContent = data.recipient.name || '-';
+                        recipientICInput.value = data.recipient.ic || '';
+                        recipientIDInput.value = data.recipient.id || '';
+                        recipientPhoneInput.value = data.recipient.phone || '';
                     } else {
-                        recipientLabel.textContent = 'No recipient found'; // Handle no result case
-                        recipientICLabel.textContent = '';
+                        recipientNameLabel.textContent = 'No recipient found';
+                        recipientICInput.value = '';
+                        recipientIDInput.value = '';
+                        recipientPhoneInput.value = '';
                     }
                 })
                 .catch(error => console.error('Error fetching recipient details:', error));
