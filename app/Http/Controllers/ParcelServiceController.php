@@ -311,7 +311,13 @@ class ParcelServiceController extends Controller
             ->get();
 
         $total_cod = DB::table('parcels')
-            ->whereNotNull('parcels.recipient_name')
+            ->where(function ($query) {
+                $query->whereNotNull('parcels.recipient_name')
+                    ->orWhere(function ($q) {
+                        $q->whereNull('parcels.recipient_name')
+                            ->whereNull('parcels.ic');
+                    });
+            })
             ->whereBetween(DB::raw("CAST(parcels.created_at AS DATE)"), [$start_date, $end_date])
             ->sum('cod_amount');
 
