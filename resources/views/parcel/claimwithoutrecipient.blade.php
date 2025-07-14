@@ -60,7 +60,7 @@
                         <form action="{{ route('parcel.claim.without.recipient.update', $item->id) }}" method="POST">
                         @csrf
                         <td></td>
-                        <td>{{ $item->recipient_name ?? 'Tiada Maklumat Penerima' }}</td>
+                        <td class="text-uppercase">{{ $item->recipient_name ?? 'Tiada Maklumat Penerima' }}</td>
                         <td>{{ $item->sender_name ?? 'Tiada Maklumat Pengirim' }}</td>
                         <td class="text-center">{{ \Carbon\Carbon::parse($item->created_at)->format('d-m-Y') }}</td>
                         <td>{{ $item->tracking_number }}</td>
