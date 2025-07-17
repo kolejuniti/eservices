@@ -222,7 +222,7 @@ class ParcelServiceController extends Controller
                         ->orWhere('eduhub.users.name', 'LIKE', '%' . $search . '%')
                         ->orWhere('eduhub.users.no_staf', 'LIKE', '%' . $search . '%');
                 })
-                ->where('parcels.status', 1) // Only include parcels with status 1
+                ->whereIN('parcels.status', [1,2]) // Only include parcels with status 1
                 ->groupBy('eduhub.users.ic', 'eduhub.users.name', 'eduhub.users.no_staf')
                 ->get();
 
@@ -239,7 +239,7 @@ class ParcelServiceController extends Controller
                         ->orWhere('eduhub.students.name', 'LIKE', '%' . $search . '%')
                         ->orWhere('eduhub.students.no_matric', 'LIKE', '%' . $search . '%');
                 })
-                ->where('parcels.status', 1) // Only include parcels with status 1
+                ->whereIN('parcels.status', [1,2]) // Only include parcels with status 1
                 ->groupBy('eduhub.students.ic', 'eduhub.students.name', 'eduhub.students.no_matric')
                 ->get();
 
