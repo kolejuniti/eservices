@@ -48,6 +48,7 @@ Route::prefix('eparcel')->middleware(['auth', 'user-access:parcel'])->group(func
     Route::match(['get', 'post'], '/tuntut/tanpa_penerima', [App\Http\Controllers\ParcelServiceController::class, 'claimWithoutRecipient'])->name('parcel.claim.without.recipient');
     Route::post('/tuntut/tanpa_penerima/kemaskini/{id}', [App\Http\Controllers\ParcelServiceController::class, 'claimWithoutRecipientUpdate'])->name('parcel.claim.without.recipient.update');
     Route::post('/tuntut/parcel/kemaskini/{id}', [App\Http\Controllers\ParcelServiceController::class, 'claimWithRecipientUpdate'])->name('parcel.claim.with.recipient.update');
+    Route::match(['get', 'post'], '/laporan/tuntut/parcel', [App\Http\Controllers\ParcelServiceController::class, 'parcelReports'])->name('parcel.claim.reports');
 
     // Logout route
     Route::post('/logout', [LoginController::class, 'logout'])->name('parcel.logout');

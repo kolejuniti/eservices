@@ -99,6 +99,7 @@ class ParcelServiceController extends Controller
         $courier = $request->input('courier');
         $serial_number = $request->input('serial_number');
         $parcel_size = $request->input('parcel_size');
+        $cod = $request->input('cod') ? 1 : 0; // Default to 0 if not checked
         $cod_amount = $request->input('cod_amount') ?? 0;
         $notes = $request->input('notes');
 
@@ -133,6 +134,7 @@ class ParcelServiceController extends Controller
                 'serial_number' => $serial_number,
                 'parcel_size' => $parcel_size,
                 'amount' => $amount,
+                'cod_id' => $cod,
                 'cod_amount' => $cod_amount,
                 'notes' => $notes,
                 'status' => 1,
@@ -157,6 +159,7 @@ class ParcelServiceController extends Controller
         $courier = $request->input('courier');
         $tracking_number = $request->input('tracking_number');
         $parcel_size = $request->input('parcel_size');
+        $cod = $request->input('cod') ? 1 : 0; // Default to 0 if not checked
         $cod_amount = $request->input('cod_amount') ?? 0;
         $notes = $request->input('notes');
 
@@ -192,6 +195,7 @@ class ParcelServiceController extends Controller
                 'tracking_number' => $tracking_number,
                 'parcel_size' => $parcel_size,
                 'amount' => $amount,
+                'cod_id' => $cod,
                 'cod_amount' => $cod_amount,
                 'notes' => $notes,
                 'status' => 1,
@@ -344,5 +348,26 @@ class ParcelServiceController extends Controller
             ->update(['cod_amount' => '0','status' => 2, 'updated_at' => $pickup_date]);
 
         return redirect()->back()->with('success', 'Status parcel telah berjaya dikemaskini.');
+    }
+
+    public function parcelReports(Request $request)
+    {
+        // Use user input if available, otherwise default to last 7 days
+        $start_date = $request->input('start_date') 
+            ? Carbon::parse($request->input('start_date'))->startOfDay()
+            : Carbon::now()->subDays(0)->startOfDay();
+
+        $end_date = $request->input('end_date') 
+            ? Carbon::parse($request->input('end_date'))->endOfDay()
+            : Carbon::now()->endOfDay();
+            
+        $parcels = DB::table('parcels')
+            ->join('couriers', 'parcels.courier_id', '=', 'couriers.id')
+            ->select('parcels.*', 'couriers.name as courier_name')
+            ->whereBetween(DB::raw("CAST(parcels.updated_at AS DATE)"), [$start_date, $end_date])
+            ->orderByDesc('parcels.updated_at')
+            ->get();
+
+        return view('parcel.claimreport', compact('parcels'));
     }
 }

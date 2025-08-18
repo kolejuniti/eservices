@@ -71,7 +71,7 @@
                         </div>
                         <div class="col-md-3 col-sm-3 col-3">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="checkDefault">
+                                <input class="form-check-input" type="checkbox" value="1" id="checkDefault" name="cod">
                                 <label class="form-check-label" for="checkDefault">COD</label>
                             </div>
                         </div>
