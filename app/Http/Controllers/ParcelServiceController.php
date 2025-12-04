@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Parcel;
+use App\Models\Courier;
+use App\Http\Requests\StoreParcelWithRecipientRequest;
+use App\Http\Requests\StoreParcelWithoutRecipientRequest;
+use App\Http\Requests\UpdateParcelClaimRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
@@ -16,28 +21,56 @@ class ParcelServiceController extends Controller
 
     public function dashboard()
     {
-        return view('parcel.dashboard');
+        // Get statistics
+        $totalParcelsToday = Parcel::whereDate('created_at', today())->count();
+        $totalParcelsThisWeek = Parcel::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count();
+        $totalParcelsThisMonth = Parcel::whereMonth('created_at', now()->month)->count();
+        
+        $unclaimedParcels = Parcel::where('status', 1)->count();
+        $claimedParcels = Parcel::where('status', 2)->count();
+        
+        $pendingCOD = Parcel::where('status', 1)->sum('cod_amount');
+        
+        // Recent parcels (last 10)
+        $recentParcels = Parcel::with('courier')
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        return view('parcel.dashboard', compact(
+            'totalParcelsToday',
+            'totalParcelsThisWeek',
+            'totalParcelsThisMonth',
+            'unclaimedParcels',
+            'claimedParcels',
+            'pendingCOD',
+            'recentParcels'
+        ));
     }
 
     public function courier()
     {
-        $couriers = DB::table('couriers')->get();
+        $couriers = Courier::all();
 
         return view('parcel.courier', compact('couriers'));
     }
 
     public function addCourier(Request $request)
     {
-        $courierName = $request->input('name');
+        $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:couriers,name'],
+        ]);
 
-        DB::table('couriers')->insert(['name'=>$courierName]);
+        Courier::create([
+            'name' => $request->input('name'),
+        ]);
 
         return redirect()->back()->with('success', 'New courier type successfully add into the system.');
     }
 
     public function formWithRecipient()
     {
-        $couriers = DB::table('couriers')->get();
+        $couriers = Courier::all();
 
         return view('parcel.registerwithrecipient', compact('couriers'));
     }
@@ -46,21 +79,22 @@ class ParcelServiceController extends Controller
     {
         $search = trim($request->query('search'));
 
+        // Fixed SQL injection vulnerability by using parameter binding
         $users = DB::table('eduhub.users')
             ->select('ic', 'name', 'no_staf AS id')
             ->where(function ($query) use ($search) {
-                $query->where('name', 'LIKE', "%{$search}%")
-                    ->orWhere('ic', 'LIKE', "%{$search}%")
-                    ->orWhere('no_staf', 'LIKE', "%{$search}%");
+                $query->where('name', 'LIKE', '%' . $search . '%')
+                    ->orWhere('ic', 'LIKE', '%' . $search . '%')
+                    ->orWhere('no_staf', 'LIKE', '%' . $search . '%');
             })
             ->get();
 
         $students = DB::table('eduhub.students')
             ->select('ic', 'name', 'no_matric AS id')
             ->where(function ($query) use ($search) {
-                $query->where('name', 'LIKE', "%{$search}%")
-                    ->orWhere('ic', 'LIKE', "%{$search}%")
-                    ->orWhere('no_matric', 'LIKE', "%{$search}%");
+                $query->where('name', 'LIKE', '%' . $search . '%')
+                    ->orWhere('ic', 'LIKE', '%' . $search . '%')
+                    ->orWhere('no_matric', 'LIKE', '%' . $search . '%');
             })
             ->get();
 
@@ -93,116 +127,61 @@ class ParcelServiceController extends Controller
         return response()->json(['recipient' => $recipient]);
     }
 
-    public function registerParcelWithRecipient(Request $request)
+    public function registerParcelWithRecipient(StoreParcelWithRecipientRequest $request)
     {
-        $ic = $request->input('ic');
-        $courier = $request->input('courier');
-        $serial_number = $request->input('serial_number');
-        $parcel_size = $request->input('parcel_size');
-        $cod = $request->input('cod') ? 1 : 0; // Default to 0 if not checked
-        $cod_amount = $request->input('cod_amount') ?? 0;
-        $notes = $request->input('notes');
-
-        $checkSerialNumber = DB::table('parcels')
-            ->where('parcels.serial_number', 'LIKE', "{$serial_number}")
-            ->get();
-
-        if ($checkSerialNumber->isNotEmpty()){
-            return redirect()->back()->with('alert', 'No. siri [' .$serial_number. '] telah digunakan. Sila semak semula.');
-        } else {
-            $amount = 0;
-
-            switch ($parcel_size) {
-                case 'Kecil':
-                    $amount = 0;
-                    break;
-                case 'Sederhana':
-                    $amount = 1;
-                    break;
-                case 'Besar':
-                    $amount = 2;
-                    break;
-                // You can add a default case for unexpected size values
-                default:
-                    // Handle default case if necessary, e.g., throw an error or log it
-                    break;
-            }
-
-            DB::table('parcels')->insert([
-                'ic' => $ic,
-                'courier_id' => $courier,
-                'serial_number' => $serial_number,
-                'parcel_size' => $parcel_size,
-                'amount' => $amount,
-                'cod_id' => $cod,
-                'cod_amount' => $cod_amount,
-                'notes' => $notes,
+        DB::beginTransaction();
+        
+        try {
+            Parcel::create([
+                'ic' => $request->input('ic'),
+                'courier_id' => $request->input('courier'),
+                'serial_number' => $request->input('serial_number'),
+                'parcel_size' => $request->input('parcel_size'),
+                'amount' => Parcel::calculateAmount($request->input('parcel_size')),
+                'cod_id' => $request->input('cod') ? 1 : 0,
+                'cod_amount' => $request->input('cod_amount') ?? 0,
+                'notes' => $request->input('notes'),
                 'status' => 1,
-                'created_at'=>now()
             ]);
-    
+
+            DB::commit();
             return redirect()->back()->with('success', 'Parcel telah berjaya didaftarkan didalam sistem.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('alert', 'Ralat berlaku semasa mendaftar parcel.');
         }
     }
 
     public function formWithoutRecipient()
     {
-        $couriers = DB::table('couriers')->get();
+        $couriers = Courier::all();
 
         return view('parcel.registerwithoutrecipient', compact('couriers'));
     }
 
-    public function registerParcelWithoutRecipient(Request $request)
+    public function registerParcelWithoutRecipient(StoreParcelWithoutRecipientRequest $request)
     {
-        $recepient_name = $request->input('recepient_name');
-        $sender_name = $request->input('sender_name');
-        $courier = $request->input('courier');
-        $tracking_number = $request->input('tracking_number');
-        $parcel_size = $request->input('parcel_size');
-        $cod = $request->input('cod') ? 1 : 0; // Default to 0 if not checked
-        $cod_amount = $request->input('cod_amount') ?? 0;
-        $notes = $request->input('notes');
-
-        $checkTrackingNumber = DB::table('parcels')
-            ->where('parcels.tracking_number', 'LIKE', "{$tracking_number}")
-            ->get();
-
-        if ($checkTrackingNumber->isNotEmpty()){
-            return redirect()->back()->with('alert', 'No. rujukan [' .$tracking_number. '] telah digunakan. Sila semak semula.');
-        } else {
-            $amount = 0;
-
-            switch ($parcel_size) {
-                case 'Kecil':
-                    $amount = 0;
-                    break;
-                case 'Sederhana':
-                    $amount = 1;
-                    break;
-                case 'Besar':
-                    $amount = 2;
-                    break;
-                // You can add a default case for unexpected size values
-                default:
-                    // Handle default case if necessary, e.g., throw an error or log it
-                    break;
-            }
-
-            DB::table('parcels')->insert([
-                'recipient_name' => $recepient_name,
-                'sender_name' => $sender_name,
-                'courier_id' => $courier,
-                'tracking_number' => $tracking_number,
-                'parcel_size' => $parcel_size,
-                'amount' => $amount,
-                'cod_id' => $cod,
-                'cod_amount' => $cod_amount,
-                'notes' => $notes,
+        DB::beginTransaction();
+        
+        try {
+            Parcel::create([
+                'recipient_name' => $request->input('recepient_name'),
+                'sender_name' => $request->input('sender_name'),
+                'courier_id' => $request->input('courier'),
+                'tracking_number' => $request->input('tracking_number'),
+                'parcel_size' => $request->input('parcel_size'),
+                'amount' => Parcel::calculateAmount($request->input('parcel_size')),
+                'cod_id' => $request->input('cod') ? 1 : 0,
+                'cod_amount' => $request->input('cod_amount') ?? 0,
+                'notes' => $request->input('notes'),
                 'status' => 1,
-                'created_at'=>now()
             ]);
-    
+
+            DB::commit();
             return redirect()->back()->with('success', 'Parcel telah berjaya didaftarkan didalam sistem.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('alert', 'Ralat berlaku semasa mendaftar parcel.');
         }
     }
 
@@ -328,26 +307,42 @@ class ParcelServiceController extends Controller
         return view('parcel.claimwithoutrecipient', compact('parcels', 'total_cod', 'start_date', 'end_date'));
     }
 
-    public function claimWithoutRecipientUpdate(Request $request, $id)
+    public function claimWithoutRecipientUpdate(UpdateParcelClaimRequest $request, $id)
     {
-        $pickup_date = $request->input('pickup_date');
+        DB::beginTransaction();
+        
+        try {
+            Parcel::where('id', $id)->update([
+                'cod_amount' => 0,
+                'status' => 2,
+                'updated_at' => $request->input('pickup_date'),
+            ]);
 
-        DB::table('parcels')
-            ->where('id', $id)
-            ->update(['cod_amount' => '0','status' => 2, 'updated_at' => $pickup_date]);
-
-        return redirect()->back()->with('success', 'Status parcel telah berjaya dikemaskini.');
+            DB::commit();
+            return redirect()->back()->with('success', 'Status parcel telah berjaya dikemaskini.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('alert', 'Ralat berlaku semasa kemaskini status parcel.');
+        }
     }
 
-    public function claimWithRecipientUpdate(Request $request, $id)
+    public function claimWithRecipientUpdate(UpdateParcelClaimRequest $request, $id)
     {
-        $pickup_date = $request->input('pickup_date');
+        DB::beginTransaction();
+        
+        try {
+            Parcel::where('id', $id)->update([
+                'cod_amount' => 0,
+                'status' => 2,
+                'updated_at' => $request->input('pickup_date'),
+            ]);
 
-        DB::table('parcels')
-            ->where('id', $id)
-            ->update(['cod_amount' => '0','status' => 2, 'updated_at' => $pickup_date]);
-
-        return redirect()->back()->with('success', 'Status parcel telah berjaya dikemaskini.');
+            DB::commit();
+            return redirect()->back()->with('success', 'Status parcel telah berjaya dikemaskini.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('alert', 'Ralat berlaku semasa kemaskini status parcel.');
+        }
     }
 
     public function parcelReports(Request $request)
@@ -360,14 +355,21 @@ class ParcelServiceController extends Controller
         $end_date = $request->input('end_date') 
             ? Carbon::parse($request->input('end_date'))->endOfDay()
             : Carbon::now()->endOfDay();
+        
+        $status = $request->input('status');
             
-        $parcels = DB::table('parcels')
+        $query = DB::table('parcels')
             ->join('couriers', 'parcels.courier_id', '=', 'couriers.id')
             ->select('parcels.*', 'couriers.name as courier_name')
-            ->whereBetween(DB::raw("CAST(parcels.updated_at AS DATE)"), [$start_date, $end_date])
-            ->orderByDesc('parcels.updated_at')
-            ->get();
+            ->whereBetween(DB::raw("CAST(parcels.created_at AS DATE)"), [$start_date, $end_date]);
+        
+        // Filter by status if provided
+        if ($status !== null && $status !== '') {
+            $query->where('parcels.status', $status);
+        }
+        
+        $parcels = $query->orderByDesc('parcels.created_at')->get();
 
-        return view('parcel.claimreport', compact('parcels'));
+        return view('parcel.claimreport', compact('parcels', 'start_date', 'end_date', 'status'));
     }
 }

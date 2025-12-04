@@ -5,15 +5,29 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-12">
-            <div class="col-md-6 col-sm-6 col-12 ms-auto">
+            <div class="col-md-8 col-sm-10 col-12 ms-auto">
                 <form method="POST" action="{{ route('parcel.claim.reports') }}">
                 @csrf
-                    <div class="input-group mb-3">
-                        <button class="btn btn-secondary" disabled>Tarikh</button>
-                        <input type="date" class="form-control" name="start_date" required>
-                        <button class="btn btn-secondary" disabled>-</button>
-                        <input type="date" class="form-control" name="end_date" required>
-                        <button class="btn btn-warning" type="submit">Cari</button>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-4">
+                            <label for="start_date" class="form-label">Tarikh Mula</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" value="{{ request('start_date') ?? $start_date->format('Y-m-d') }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="end_date" class="form-label">Tarikh Akhir</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date" value="{{ request('end_date') ?? $end_date->format('Y-m-d') }}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">Semua</option>
+                                <option value="2" {{ request('status') == '2' ? 'selected' : '' }}>Telah Dituntut</option>
+                                <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Belum Dituntut</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button class="btn btn-warning w-100" type="submit">Cari</button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -33,37 +47,27 @@
                 <thead class="table-dark">
                     <tr>
                         <th>#</th>
-                        <th>Tarikh Tuntutan</th>
-                        <th>No. Rujukan</th>
                         <th>No. Siri</th>
+                        <th>No. Rujukan</th>
                         <th>Jenis Kurier</th>
                         <th>Saiz</th>
-                        <th>Amaun (RM)</th>
-                        <th>COD (RM)</th>
+                        <th>COD</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($parcels as $item)
                     <tr>
                         <td></td>
-                        <td class="text-center">{{ \Carbon\Carbon::parse($item->updated_at)->format('d-m-Y') }}</td>
-                        <td class="text-center">{{ $item->tracking_number }}</td>
                         <td class="text-center">{{ $item->serial_number }}</td>
+                        <td class="text-center">{{ $item->tracking_number }}</td>
                         <td class="text-center">{{ $item->courier_name }}</td>
                         <td class="text-center">{{ $item->parcel_size }}</td>
-                        <td class="text-center">{{ number_format($item->amount,2) }}</td>
-                        <td class="text-center">{{ number_format($item->cod_amount,2) }}</td>
+                        <td class="text-center">
+                            <input type="checkbox" {{ $item->cod_id == 1 ? 'checked' : '' }} disabled>
+                        </td>
                     </tr>
                     @endforeach
                 </tbody>
-                <tfoot>
-                    <tr class="table-danger">
-                        <th colspan="5" class="text-end"></th>
-                        <th class="text-center">Jumlah</th>
-                        <th class="text-center">{{ number_format($parcels->sum('amount'), 2) }}</th>
-                        <th class="text-center">{{ number_format($parcels->sum('cod_amount'), 2) }}</th>
-                    </tr>
-                </tfoot>
             </table>
         </div>
     </div>

@@ -66,6 +66,13 @@
                                 <li><a class="dropdown-item" href="{{ route('parcel.claim.without.recipient') }}">Tiada Penerima</a></li>
                             </ul>
                         </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-file-lines"></i>&nbsp;Laporan
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ route('parcel.claim.reports') }}">Laporan Parcel</a></li>
+                            </ul>
+                        </li>
                         {{-- <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" data-bs-auto-close="outside" href="#" role="button" data-bs-toggle="dropdown"aria-expanded="false"><i class="bi bi-box-seam"></i>&nbsp;Parcel
                             </a>
