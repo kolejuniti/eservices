@@ -138,7 +138,7 @@ class ParcelServiceController extends Controller
                 'serial_number' => $request->input('serial_number'),
                 'parcel_size' => $request->input('parcel_size'),
                 'amount' => Parcel::calculateAmount($request->input('parcel_size')),
-                'cod_id' => $request->input('cod') ? 1 : 0,
+                'cod_id' => $request->has('cod') && $request->input('cod') ? true : false,
                 'cod_amount' => $request->input('cod_amount') ?? 0,
                 'notes' => $request->input('notes'),
                 'status' => 1,
@@ -148,7 +148,13 @@ class ParcelServiceController extends Controller
             return redirect()->back()->with('success', 'Parcel telah berjaya didaftarkan didalam sistem.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('alert', 'Ralat berlaku semasa mendaftar parcel.');
+            \Log::error('Error registering parcel with recipient: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request_data' => $request->all()
+            ]);
+            return redirect()->back()
+                ->with('alert', 'Ralat berlaku semasa mendaftar parcel: ' . $e->getMessage())
+                ->withInput();
         }
     }
 
