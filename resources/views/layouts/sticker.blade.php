@@ -26,7 +26,10 @@
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">
                 <a class="navbar-brand" href="{{ url('/') }}">
-                    {{ config('app.name', 'Laravel') }}
+                    <picture>
+                        <source srcset="https://ku-storage-object.ap-south-1.linodeobjects.com/eservices/images/logo/eservices.webp" type="image/webp">
+                        <img src="https://ku-storage-object.ap-south-1.linodeobjects.com/eservices/images/logo/eservices.png" alt="Logo" class="img-fluid" style="width: 150px; height: auto;">
+                    </picture>
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                     <span class="navbar-toggler-icon"></span>
