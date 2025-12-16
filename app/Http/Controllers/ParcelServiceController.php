@@ -367,7 +367,16 @@ class ParcelServiceController extends Controller
             
         $query = DB::table('parcels')
             ->join('couriers', 'parcels.courier_id', '=', 'couriers.id')
-            ->select('parcels.*', 'couriers.name as courier_name')
+            ->leftJoin('eduhub.users', 'parcels.ic', '=', 'eduhub.users.ic')
+            ->leftJoin('eduhub.students', 'parcels.ic', '=', 'eduhub.students.ic')
+            ->select(
+                'parcels.*', 
+                'couriers.name as courier_name',
+                DB::raw("CASE 
+                    WHEN parcels.ic IS NOT NULL THEN COALESCE(eduhub.users.name, eduhub.students.name) 
+                    ELSE parcels.recipient_name 
+                END as final_recipient_name")
+            )
             ->whereBetween(DB::raw("CAST(parcels.created_at AS DATE)"), [$start_date, $end_date]);
         
         // Filter by status if provided
