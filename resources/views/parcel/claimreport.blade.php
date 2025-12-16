@@ -9,11 +9,11 @@
                 <form method="POST" action="{{ route('parcel.claim.reports') }}">
                 @csrf
                     <div class="row g-2 mb-3">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label for="start_date" class="form-label">Tarikh Mula</label>
                             <input type="date" class="form-control" id="start_date" name="start_date" value="{{ request('start_date') ?? $start_date->format('Y-m-d') }}" required>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label for="end_date" class="form-label">Tarikh Akhir</label>
                             <input type="date" class="form-control" id="end_date" name="end_date" value="{{ request('end_date') ?? $end_date->format('Y-m-d') }}" required>
                         </div>
@@ -26,6 +26,14 @@
                             </select>
                         </div>
                         <div class="col-md-1 d-flex align-items-end">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="cod" name="cod" value="1" {{ request('cod') == '1' ? 'checked' : '' }}>
+                                <label class="form-check-label" for="cod">
+                                    COD
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
                             <button class="btn btn-warning w-100" type="submit">Cari</button>
                         </div>
                     </div>
@@ -52,6 +60,7 @@
                         <th>Jenis Kurier</th>
                         <th>Saiz</th>
                         <th>COD</th>
+                        <th>Jumlah (RM)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -63,11 +72,18 @@
                         <td class="text-center">{{ $item->courier_name }}</td>
                         <td class="text-center">{{ $item->parcel_size }}</td>
                         <td class="text-center">
-                            <input type="checkbox" {{ $item->cod_id == 1 ? 'checked' : '' }} disabled>
+                            <input type="checkbox" {{ $item->cod_id == 1 ? 'checked' : '' }} readonly>
                         </td>
+                        <td class="text-center">{{ number_format($item->cod_amount, 2) }}</td>
                     </tr>
                     @endforeach
                 </tbody>
+                <tfoot class="table-dark">
+                    <tr>
+                        <th colspan="6" class="text-end">Jumlah Keseluruhan</th>
+                        <th class="text-center">{{ number_format($parcels->sum('cod_amount'), 2) }}</th>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>
