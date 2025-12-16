@@ -363,6 +363,7 @@ class ParcelServiceController extends Controller
             : Carbon::now()->endOfDay();
         
         $status = $request->input('status');
+        $cod = $request->input('cod');
             
         $query = DB::table('parcels')
             ->join('couriers', 'parcels.courier_id', '=', 'couriers.id')
@@ -372,6 +373,11 @@ class ParcelServiceController extends Controller
         // Filter by status if provided
         if ($status !== null && $status !== '') {
             $query->where('parcels.status', $status);
+        }
+        
+        // Filter by COD if checkbox is checked
+        if ($cod == '1') {
+            $query->where('parcels.cod_id', 1);
         }
         
         $parcels = $query->orderByDesc('parcels.created_at')->get();
