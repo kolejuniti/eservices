@@ -55,8 +55,11 @@
                 <thead class="table-dark">
                     <tr>
                         <th>#</th>
+                        <th>Tarikh</th>
                         <th>No. Siri</th>
                         <th>No. Rujukan</th>
+                        <th>Penerima</th>
+                        <th>Pengirim</th>
                         <th>Jenis Kurier</th>
                         <th>Saiz</th>
                         <th>COD</th>
@@ -67,8 +70,11 @@
                     @foreach ($parcels as $item)
                     <tr>
                         <td></td>
+                        <td class="text-center">{{ \Carbon\Carbon::parse($item->created_at)->format('d/m/Y H:i:s') }}</td>
                         <td class="text-center">{{ $item->serial_number }}</td>
                         <td class="text-center">{{ $item->tracking_number }}</td>
+                        <td class="text-center">{{ $item->final_recipient_name }}</td>
+                        <td class="text-center">{{ $item->sender_name }}</td>
                         <td class="text-center">{{ $item->courier_name }}</td>
                         <td class="text-center">{{ $item->parcel_size }}</td>
                         <td class="text-center">
@@ -80,7 +86,7 @@
                 </tbody>
                 <tfoot class="table-dark">
                     <tr>
-                        <th colspan="6" class="text-end">Jumlah Keseluruhan</th>
+                        <th colspan="9" class="text-end">Jumlah Keseluruhan</th>
                         <th class="text-center">{{ number_format($parcels->sum('cod_amount'), 2) }}</th>
                     </tr>
                 </tfoot>
